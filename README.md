@@ -1,19 +1,14 @@
-# 1080 Network
-Main public repository for 1080 Network with documentation and links to language specific repositories.
+# Mica Network
+Main public repository for the Mica Network. In this repository you will find samples.
 
-# Service Definitions
-All 1080 Network service definitions are found in the [proto](https://github.com/1080network/proto) repository.
+## Links
 
-# Languages
-## C#
-Repository: [C#](https://github.com/1080network/c-sharp).
+- Service api definitions are found in the [proto](https://github.com/1080network/proto) repository.
+- Developer portal [https://developer.mica.io](https://developer.mica.io)
 
-## Go
-Repository: [Go](https://github.com/1080network/golang).
+## Samples
 
-## Java
-Repository: [Java](https://github.com/1080network/java).
+[issuer-spring-boot-demo](https://github.com/1080network/public/tree/master/issuer-spring-boot-demo): Issuer integration example with Spring Boot and Kotlin.
 
-## TypeScript
-Repository: [TypeScript](https://github.com/1080network/typescript).
+
 
