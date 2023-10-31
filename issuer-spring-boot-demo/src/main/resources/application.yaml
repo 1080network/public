@@ -1,0 +1,14 @@
+grpc:
+  server:
+    port: 20100
+    security:
+      enabled: on
+      client-auth: require
+
+mica:
+  host: ${MICA_HOST:cacahuate}
+  port: 443
+  rootCAPEM: ${MICA_CLIENT_ROOT_CA}
+  clientKeyPEM: ${MICA_CLIENT_KEY}
+  clientCertificatePEM: ${MICA_CLIENT_CERTIFICATE}
+
