@@ -3,7 +3,10 @@ grpc:
     port: 20100
     security:
       enabled: on
-      client-auth: require
+      certificateChain: ${MICA_SERVER_CERTIFICATE}
+      privateKey: ${MICA_SERVER_KEY}
+      client-auth: optional
+      trustCertCollection: ${MICA_SERVER_ROOT_CA}
 
 mica:
   host: ${MICA_HOST:cacahuate}

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component
 @Component
 class MicaIssuanceClient(val micaClient : ServiceProviderToMicaServiceGrpcKt.ServiceProviderToMicaServiceCoroutineStub) {
 
-    suspend fun RegisterUser(userData: UserData) : String {
+    suspend fun registerUser(userData: UserData) : String {
         val requestBuilder = RegisterUserRequest.newBuilder().apply {
             this.serviceProviderUserRef = userData.id
         }
@@ -24,7 +24,6 @@ class MicaIssuanceClient(val micaClient : ServiceProviderToMicaServiceGrpcKt.Ser
         }
         return response.serviceProviderUserKey
     }
-
 }
 
 fun UserData.toMicaDemographic(): UserDemographic? {

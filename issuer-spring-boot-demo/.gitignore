@@ -37,3 +37,6 @@ out/
 .vscode/
 
 localdev.env
+*.crt
+*.key
+*.ca

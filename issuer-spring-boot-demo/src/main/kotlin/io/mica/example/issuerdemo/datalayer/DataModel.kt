@@ -6,7 +6,7 @@ import java.util.Date
 import java.util.Locale.IsoCountryCode
 
 
-class UserData(
+data class UserData(
     val id:String,
     val name: String,
     val lastName: String,

@@ -16,9 +16,9 @@ class UserService(private val repository: InMemoryRepository, private val micaCl
         val userData = user.toUserData()
         val newUser = repository.createUser(userData)
         //register this user with Mica this should really be done
-        //with a more robust approach like a reconcilliation loop that
+        //with a more robust approach like a reconciliation loop that
         //keeps retrying if something fails, this is a naive approach
-        val micaKey = micaClient.RegisterUser(newUser)
+        val micaKey = micaClient.registerUser(newUser)
         newUser.micaIdKey = micaKey
         repository.updateUser(newUser)
         return newUser
