@@ -9,7 +9,7 @@ grpc:
       trustCertCollection: ${MICA_SERVER_ROOT_CA}
 
 mica:
-  host: ${MICA_HOST:cacahuate}
+  host: ${MICA_HOST}
   port: 443
   rootCAPEM: ${MICA_CLIENT_ROOT_CA}
   clientKeyPEM: ${MICA_CLIENT_KEY}
