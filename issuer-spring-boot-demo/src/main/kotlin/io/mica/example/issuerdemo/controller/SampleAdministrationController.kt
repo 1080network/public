@@ -5,8 +5,12 @@ import io.mica.serviceprovider.service.v1.ServiceProviderToMicaServiceGrpcKt
 import io.micashared.common.ping.v1.PingProto.PingResponse
 import io.micashared.common.ping.v1.pingRequest
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.reactive.function.server.ServerResponse
+import org.springframework.web.reactive.function.server.bodyValueAndAwait
+import org.springframework.web.reactive.function.server.buildAndAwait
 
 @RestController
 @RequestMapping("/admin")
@@ -31,4 +35,11 @@ class SampleAdministrationController(
         }
     }
 
+    @GetMapping("/notfound/{id}", produces = ["text/plain"])
+    suspend fun callNotFound(@PathVariable id: String): ServerResponse? = id?.let {
+        when (it == "me") {
+            true -> ServerResponse.ok().bodyValueAndAwait("Hi there dude")!!
+            else -> ServerResponse.notFound().buildAndAwait()!!
+        }
+    }
 }

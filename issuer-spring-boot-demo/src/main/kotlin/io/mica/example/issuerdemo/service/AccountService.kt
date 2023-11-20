@@ -19,7 +19,7 @@ class AccountService (val repository: InMemoryRepository) {
             !isPartial && account.balance < requestedAmount -> account to TransactionResult(ApprovalType.INSUFFICIENT_BALANCE, 0)
             else -> {
                 val newBalance = account.balance - requestedAmount
-                UserAccount(id = account.id, userId = account.userId, shortName = account.shortName, newBalance, micaIdKey = account.micaIdKey) to TransactionResult(ApprovalType.FULL_APPROVAL, newBalance)
+                UserAccount(id = account.id, userId = account.userId, shortName = account.shortName, newBalance, micaIdKey = account.micaIdKey) to TransactionResult(ApprovalType.FULL_APPROVAL, requestedAmount)
             }
         }
         repository.updateAccount(result.first)

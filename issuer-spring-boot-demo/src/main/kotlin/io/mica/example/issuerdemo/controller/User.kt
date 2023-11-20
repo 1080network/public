@@ -2,6 +2,7 @@ package io.mica.example.issuerdemo.controller
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.mica.example.issuerdemo.datalayer.UserData
+import java.time.LocalDate
 import java.util.Date
 import java.util.Locale.IsoCountryCode
 import java.util.UUID
@@ -13,7 +14,7 @@ data class User(
     val lastName: String?,
     val phoneNumber: String?,
     val address: Address?,
-    val dateOfBirth: Date?
+    val dateOfBirth: LocalDate?
 )
 
 data class Address(
@@ -34,9 +35,9 @@ fun User.toUserData():UserData{
         name = this.name?: "",
         lastName = this.lastName ?: "",
         phoneNumber = this.phoneNumber ?: "",
-        dateOfBirth = this.dateOfBirth ?: Date(0),
+        dateOfBirth = this.dateOfBirth ?: LocalDate.ofEpochDay(0),
         city = this.address?.city ?: "",
-        country = IsoCountryCode.valueOf( this.address?.country ?: "US"),
+        country = this.address?.country ?: "US",
         state = this.address?.state ?: "",
         micaIdKey = "",
     )

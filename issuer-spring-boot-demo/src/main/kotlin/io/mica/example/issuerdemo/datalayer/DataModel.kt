@@ -1,8 +1,6 @@
 package io.mica.example.issuerdemo.datalayer
 
-import io.mica.example.issuerdemo.controller.Address
-import io.mica.example.issuerdemo.controller.User
-import java.util.Date
+import java.time.LocalDate
 import java.util.Locale.IsoCountryCode
 import java.util.UUID
 
@@ -13,11 +11,11 @@ data class UserData(
     val lastName: String,
     val phoneNumber: String,
     val addressLine1: String,
-    val addressLine2: String,
+    val addressLine2: String = "",
     val city: String,
     val state: String,
-    val country: IsoCountryCode,
-    val dateOfBirth: Date,
+    val country: String,
+    val dateOfBirth: LocalDate,
     var micaIdKey : String
 )
 
