@@ -3,7 +3,6 @@ package io.mica.example.issuerdemo.grpc.server
 import com.google.protobuf.Timestamp
 import io.mica.example.issuerdemo.service.AccountService
 import io.mica.example.issuerdemo.service.ApprovalType
-import io.mica.serviceprovider.instrument.v1.resetPINRequest
 import io.mica.serviceprovider.service.v1.ServiceProviderFromMicaServiceGrpcKt
 import io.mica.serviceprovider.value.v1.ValueProto
 import io.mica.serviceprovider.value.v1.ValueProto.ObtainValueResponse
