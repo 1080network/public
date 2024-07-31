@@ -41,8 +41,8 @@ dependencies {
 	implementation("net.devh:grpc-server-spring-boot-starter:2.15.0.RELEASE")
 
 	//mica skd
-	implementation("io.mica.sdk.kotlin:serviceprovider:v0.0.1042")
-	implementation("io.mica.sdk.kotlin:micacommon:v0.0.1042")
+	implementation("io.mica.sdk.kotlin:serviceprovider:v0.0.1090")
+	implementation("io.mica.sdk.kotlin:micacommon:v0.0.1090")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("io.projectreactor:reactor-test")
