@@ -16,6 +16,7 @@ java {
 }
 
 repositories {
+	mavenLocal()
 	mavenCentral()
 	google()
 	maven {
