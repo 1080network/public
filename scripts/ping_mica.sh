@@ -87,12 +87,12 @@ fi
 
 default_host="api.${partition}.members.mica.io"
 if [[ -z "$MICA_HOST" ]]; then
-  echo "Warning: defaulting Mica host to $default_host"
+#  echo "Warning: defaulting Mica host to $default_host"
   MICA_HOST="${default_host}"
 fi
 
 if [[ -z "$MICA_PORT" ]]; then
-  echo "Waning: defaulting Mica port to 443"
+#  echo "Waning: defaulting Mica port to 443"
   MICA_PORT=443
 fi
 
@@ -107,8 +107,6 @@ else
 fi
 
 OUT=/tmp/$$.out
-
-echo "calling Mica service:${service}, host:${MICA_HOST}, port:${MICA_PORT}"
 
 echo "{}" | evans  cli call  ${service} \
     --host $MICA_HOST --port $MICA_PORT --reflection --tls \
