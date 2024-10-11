@@ -9,7 +9,7 @@ help() {
     echo "    -c <csr-path>        Path to the PEM format CSR file used to sign the cert (Required)"
     echo "    -a <admin-cert-path> path to the folder containing the admin rootca, crt and key files (Required)"
     echo "    -d <duration>        the length of time the cert is to be valid (e.g., 24h, 720h) default is 24h"
-    echo "    -m <mica-role>       this should be one of partner|serviceprovider. default is partner"
+    echo "    -m <mica-role>       this should be one of partner|serviceprovider (Required)"
     echo "    -h this help menu"
     echo "Note that the file names for the admin certificate/key files should conform to the following:"
     echo "rootca: admin_\${partition}.members.mica.io_rootca.crt"
