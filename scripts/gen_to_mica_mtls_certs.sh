@@ -8,7 +8,7 @@ help() {
     echo "    -n <display-name>    Certificate display name (Required, can be up to 10 characters in length)"
     echo "    -c <csr-path>        Path to the PEM format CSR file used to sign the cert (Required)"
     echo "    -a <admin-cert-path> path to the folder containing the admin rootca, crt and key files (Required)"
-    echo "    -d <duration>        the length of time the cert is to be valid (e.g., 24h, 60d) default is 30d"
+    echo "    -d <duration>        the length of time the cert is to be valid (e.g., 24h, 720h) default is 24h"
     echo "    -m <mica-role>       this should be one of partner|serviceprovider. default is partner"
     echo "    -h this help menu"
     echo "Note that the file names for the admin certificate/key files should conform to the following:"
@@ -27,14 +27,14 @@ help() {
 ############################################################################################
 
 partition=""
-duration="30d"
+
+duration="24h"
 csrfile=""
 name=""
+micarole=""
 adminpath=""
-outputprefix=
-micarole="partner"
 
-while getopts p:d:n:c:a:o:m:h flag
+while getopts p:n:d:c:a:m:h flag
 do
     case "${flag}" in
         p) partition=${OPTARG};;
@@ -42,61 +42,63 @@ do
         d) duration=${OPTARG};;
         c) csrfile=${OPTARG};;
         a) adminpath=${OPTARG};;
-        o) outputprefix=${OPTARG};;
         m) micarole=${OPTARG};;
         h) help && exit 0;;
        \?) # Invalid option
-               echo "Error: Invalid option"
-               help && exit 0;;
+          echo "Error: Invalid option"
+          help && exit 0;;
     esac
 done
 evansloc=$(which evans)
 
 if [[ -z ${evansloc} ]] ; then
-    echo "evans not installed or not found on the current user's PATH"
+    echo "ERROR: evans not installed or not found on the current user's PATH"
     help
     exit 1
 fi
 
 if [[ -z ${partition} ]] ; then
-    echo "A partition name must be defined"
+    echo "ERROR: a partition name must be defined"
     help
     exit 1
 fi
-
 if [[ -z ${adminpath} ]] ; then
-    echo "The path to the admin certs must be defined"
+    echo "ERROR: the path to the admin certs must be defined"
     help
     exit 1
 fi
 
 if [[ -z ${csrfile} ]] ; then
-    echo "The path to the CSR file must be defined"
+    echo "ERROR: the path to the CSR file must be defined"
     help
     exit 1
 fi
 
-if [[ -z ${outputprefix} ]] ; then
-    echo "The output prefix must be defined"
+if [[ -z ${micarole} ]] ; then
+    echo "ERROR: the mica role must be defined"
     help
     exit 1
 fi
 
 if [[ ${#name} -gt 10 ]] ; then
-    echo "The certificate name must 10 characters or less"
+    echo "ERROR: the certificate name must 10 characters or less"
     help
     exit 1
 fi
 
 if [[ ! -f "$csrfile" ]]; then
-  echo "CSR file ${csrfile} does not exist"
+  echo "ERROR: CSR file \"${csrfile}\" does not exist"
   exit 1
 fi
 
+if [[ ! -d "${adminpath}" ]]; then
+  echo "ERROR: the admin certs directory \"${adminpath}\" does not exist or is not a directory"
+  exit 1
+fi
 
-admin_rootca_file="${adminpath}/admin_${partition}_rootca.crt"
-admin_cert_file="${adminpath}/admin_${partition}.crt"
-admin_key_file="${adminpath}/admin_${partition}.key"
+admin_rootca_file="${adminpath}/admin_${partition}.members.mica.io_rootca.crt"
+admin_cert_file="${adminpath}/admin_${partition}.members.mica.io.crt"
+admin_key_file="${adminpath}/admin_${partition}.members.mica.io.key"
 
 if [[ ! -f "$admin_rootca_file" ]]; then
   echo "Admin rootca file ${admin_rootca_file} does not exist"
@@ -132,9 +134,13 @@ if [[ -z "$MICA_PORT" ]]; then
   MICA_PORT=443
 fi
 
-service="mica.partner.administration.v1.PartnerAdministrationService.GenerateMTLSCertificate"
 if [[ ${micarole} == "serviceprovider" ]]; then
   service="mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.GenerateMTLSCertificate"
+elif [[ ${micarole} == "partner" ]]; then
+  service="mica.partner.administration.v1.PartnerAdministrationService.GenerateMTLSCertificate"
+else
+  echo "ERROR: the mica role \"${micarole}\" is invalid, must be either \"partner\" or \"serviceprovider\" "
+  exit 1
 fi
 
 OUT=/tmp/$$.out
@@ -172,3 +178,5 @@ cat $OUT | jq -r .certificate.pemCertificate > "${output}.crt"
 cat $OUT | jq -r .certificate.pemIssuingCa  > "${output}_rootca.crt"
 
 cp $OUT "generate_mtls_certificate_response.json"
+
+echo "Call to Mica generate to client certificate succeeded!"

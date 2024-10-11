@@ -5,9 +5,9 @@ help() {
     echo "Usage: $0 -p <partition> -n <name> -c <path to cert dir> -m <mica role> "
     echo "Options:"
     echo "    -p <partition>       Mica partition id (Required)"
-    echo "    -n <name>            Certificate prefix name"
+    echo "    -n <name>            Certificate name (Required) "
     echo "    -c <cert-path>       path to the folder containing the rootca, crt and key files (default is current dir)"
-    echo "    -m <mica-role>       this should be one of partner|serviceprovider. default is partner"
+    echo "    -m <mica-role>       this should be one of partner|serviceprovider (Required)"
     echo "    -h this help menu"
     echo "Note that the file names for the certificate/key files should conform to the following:"
     echo "rootca: externalclient_\${name}_\${partition}.members.mica.io_rootca.crt"
@@ -22,9 +22,9 @@ help() {
 }
 
 partition=
-name="test"
+name=""
 certpath=`pwd`
-micarole="partner"
+micarole=""
 
 while getopts p:n:m:c:h flag
 do
@@ -42,8 +42,26 @@ done
 
 evansloc=$(which evans)
 
+if [[ -z ${partition} ]] ; then
+    echo "ERROR: a partition name must be defined"
+    help
+    exit 1
+fi
+
+if [[ -z ${name} ]] ; then
+    echo "ERROR: a certificate name must be defined"
+    help
+    exit 1
+fi
+if [[ -z ${micarole} ]] ; then
+    echo "ERROR: the mica role must be defined"
+    help
+    exit 1
+fi
+
+
 if [[ -z ${evansloc} ]] ; then
-    echo "evans not installed or not found on the current user's PATH"
+    echo "ERROR: evans not installed or not found on the current user's PATH"
     help
     exit 1
 fi
@@ -53,44 +71,46 @@ cert_file="${certpath}/externalclient_${name}_${partition}.members.mica.io.crt"
 key_file="${certpath}/externalclient_${name}_${partition}.members.mica.io.key"
 
 if [[ ! -f "$rootca_file" ]]; then
-  echo "rootca file ${rootca_file} does not exist"
+  echo "ERROR: rootca file ${rootca_file} does not exist"
   exit 1
 fi
 
 if [[ ! -f "$cert_file" ]]; then
-  echo "cert file ${cert_file} does not exist"
+  echo "ERROR: cert file ${cert_file} does not exist"
   exit 1
 fi
 
 if [[ ! -f "$key_file" ]]; then
-  echo "key file ${key_file} does not exist"
+  echo "ERROR: key file ${key_file} does not exist"
   exit 1
 fi
 
 default_host="api.${partition}.members.mica.io"
 if [[ -z "$MICA_HOST" ]]; then
-  echo "defaulting to $default_host"
+  echo "Warning: defaulting Mica host to $default_host"
   MICA_HOST="${default_host}"
 fi
 
 if [[ -z "$MICA_PORT" ]]; then
-  echo "defaulting to port 443"
+  echo "Waning: defaulting Mica port to 443"
   MICA_PORT=443
 fi
 
-service_path=""
-
+service=""
 if [[ "${micarole}" == "partner" ]]; then
-  service_path="mica.partner.service.v1.PartnerToMicaService.Ping"
+  service="mica.partner.service.v1.PartnerToMicaService.Ping"
+elif [[ "${micarole}" == "partner" ]]; then
+  service="mica.serviceprovider.service.v1.ServiceProviderToMicaService.Ping"
 else
-  service_path="mica.serviceprovider.service.v1.ServiceProviderToMicaService.Ping"
+  echo "ERROR: the mica role \"${micarole}\" is invalid, must be either \"partner\" or \"serviceprovider\" "
+  exit 1
 fi
 
 OUT=/tmp/$$.out
 
-echo "calling Mica service:${service_path}, host:${MICA_HOST}, port:${MICA_PORT}"
+echo "calling Mica service:${service}, host:${MICA_HOST}, port:${MICA_PORT}"
 
-echo "{}" | evans  cli call  ${service_path} \
+echo "{}" | evans  cli call  ${service} \
     --host $MICA_HOST --port $MICA_PORT --reflection --tls \
     --cacert $rootca_file \
     --cert $cert_file \
@@ -98,7 +118,7 @@ echo "{}" | evans  cli call  ${service_path} \
 
 RC=$?
 if [[ "$RC" -ne 0 ]]; then
-  echo "Evans call failed"
+  echo "Error: Evans call failed"
   exit 1
 fi
 
@@ -106,7 +126,7 @@ mica_status=$(jq -r .status < $OUT)
 cp $OUT "ping_response.json"
 
 if [[ "${mica_status}" != "STATUS_SUCCESS" ]]; then
-  echo "the call to mica to test the certificates did not succeed. status was ${mica_status}"
+  echo "ERROR: the call to mica to test the certificates did not succeed. status was \"${mica_status}\" "
   cat ping_response.json
   exit 1
 fi

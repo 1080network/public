@@ -34,13 +34,13 @@ do
 done
 
 if [[ -z ${partition} ]] ; then
-    echo "A partition name must be defined"
+    echo "ERROR: a partition name must be defined"
     help
     exit 1
 fi
 
 if [[ ${#certname} -gt 10 ]] ; then
-    echo "The certificate name needs to be less than 10 characters"
+    echo "ERROR: the certificate name needs to be less than 10 characters"
     help
     exit 1
 fi
@@ -59,3 +59,5 @@ subject="/C=US/ST=${state}/L=${locality}/O=${organization}/OU=${unit}/CN=externa
 
 echo Subject is: ${subject}
 openssl req -new -newkey rsa:2048 -nodes -out ${outputcsr} -keyout ${outputkey} -subj ${subject}
+
+echo "Generation of Mica client CSR and key succeeded."
