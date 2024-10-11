@@ -125,12 +125,12 @@ fi
 
 default_host="api.${partition}.members.mica.io"
 if [[ -z "$MICA_HOST" ]]; then
-  echo "defaulting to $default_host"
+#  echo "defaulting to $default_host"
   MICA_HOST="${default_host}"
 fi
 
 if [[ -z "$MICA_PORT" ]]; then
-  echo "defaulting to port 443"
+#  echo "defaulting to port 443"
   MICA_PORT=443
 fi
 
@@ -144,7 +144,6 @@ else
 fi
 
 OUT=/tmp/$$.out
-echo "calling Mica service:${service}, host:${MICA_HOST}, port:${MICA_PORT}"
 
 jq --null-input  --arg csr "$CSRB64"  --arg expiry "$duration" --arg name "$name" '{
   "csr": { "base64_pem_csr": $csr },
