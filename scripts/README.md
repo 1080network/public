@@ -45,8 +45,9 @@ This will produce two files:
 1. `externalclient_test_hron3n.members.mica.io.csr`
 2. `externalclient_test_hron3n.members.mica.io.key`
 
-The first file is needed to send to Mica so create a signed certificate. The second file is needed to test the connection
-the Mica.
+The first file is needed to send to Mica to create a signed certificate. The second file is needed to test the connection
+the Mica and to use for subsequent connections for your applications.
+
 ### 2. Call Mica to Create the Signed Certificate
 ```text
 > ./gen_to_mica_mtls_certs.sh -p hron3n -n test \
@@ -71,7 +72,8 @@ externalclient_test_hron3n.members.mica.io.crt  gen_to_mica_csr.sh
 externalclient_test_hron3n.members.mica.io.csr  gen_to_mica_mtls_certs.sh
 externalclient_test_hron3n.members.mica.io.key  ping_mica.sh
 ```
-If this is not the case you must supply the location of these files using an additional `-c` command line parameter:
+If the certificate files are not in the current directory you must supply the path to the directory containing the files 
+using an additional `-c` command line parameter:
 ```text
 > ./ping_mica.sh -p hron3n -n test -m partner -c /tmp/mycerts
 ```
