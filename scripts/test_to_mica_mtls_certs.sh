@@ -1,7 +1,7 @@
 #! /bin/bash
 
 help() {
-    echo "This script calls mica to generate a \"to mica\" certificate using a previously generated CSR file"
+    echo "This script calls mica to test a \"to mica\" certificates using previously generated certificate files"
     echo "Usage: $0 -p <partition> -n <name> -c <path to cert dir> -m <mica role> "
     echo "Options:"
     echo "    -p <partition>       Mica partition id (Required)"
