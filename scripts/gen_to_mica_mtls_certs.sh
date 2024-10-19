@@ -163,6 +163,8 @@ if [[ "$RC" -ne 0 ]]; then
   exit 1
 fi
 
+cp $OUT "generate_mtls_certificate_response.json"
+
 mica_status=$(jq -r .status < $OUT)
 
 if [[ "${mica_status}" != "STATUS_SUCCESS" ]]; then
@@ -175,7 +177,5 @@ output="externalclient_${name}_${partition}.members.mica.io"
 cat $OUT | jq -r .certificate.pemCertificate > "${output}.crt"
 
 cat $OUT | jq -r .certificate.pemIssuingCa  > "${output}_rootca.crt"
-
-cp $OUT "generate_mtls_certificate_response.json"
 
 echo "Call to Mica generate to client certificate succeeded!"

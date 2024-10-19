@@ -64,6 +64,19 @@ if [[ -z ${partition} ]] ; then
     help
     exit 1
 fi
+
+if [[ -z ${certref} ]] ; then
+    echo "ERROR: a certificate ref must be defined"
+    help
+    exit 1
+fi
+
+if [[ -z ${name} ]] ; then
+    echo "ERROR: a certificate name must be defined"
+    help
+    exit 1
+fi
+
 if [[ -z ${adminpath} ]] ; then
     echo "ERROR: the path to the admin certs must be defined"
     help
@@ -104,14 +117,15 @@ if [[ ! -f "${rootcapemfile}" ]]; then
   exit 1
 fi
 
-cert_pem_bas64=$(base64 -i certpemfile)
+cert_pem_base64=$(base64 -i ${certpemfile})
 RC=$?
 
 if [[ "$RC" -ne 0 ]]; then
   echo "Base64 conversion of certificate PEM file failed"
   exit 1
 fi
-rootca_pem_bas64=$(base64 -i rootcapemfile)
+
+rootca_pem_base64=$(base64 -i ${rootcapemfile})
 RC=$?
 
 if [[ "$RC" -ne 0 ]]; then
@@ -136,11 +150,11 @@ service="mica.serviceprovider.administration.v1.ServiceProviderAdministrationSer
 OUT=/tmp/$$.out
 
 #echo "calling $service"
-jq --null-input  --arg name "$name" --arg certrefkey "$certref" --arg certificate ${cert_pem_base64} \
+jq --null-input  --arg name "${name}" --arg certrefkey "${certref}" --arg certificate "${cert_pem_base64}" \
    --arg rootca "${rootca_pem_base64}" --arg enabled ${enabled} '{
-  "certifcate_ref_key": $certrefkey,
+  "certificate_ref_key": $certrefkey,
   "base64_signed_cert_pem_from_csr": $certificate,
-  "base64_rootca_bundle_pem": $rootca
+  "base64_rootca_bundle_pem": $rootca,
   "display_name": $name,
   "enabled":  $enabled
 }' | evans  \
@@ -155,6 +169,7 @@ if [[ "$RC" -ne 0 ]]; then
   echo "Evans call failed"
   exit 1
 fi
+cp $OUT "update_callback_cert_response.json"
 
 mica_status=$(jq -r .status < $OUT)
 

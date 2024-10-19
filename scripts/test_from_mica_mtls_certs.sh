@@ -6,7 +6,7 @@ help() {
     echo "Options:"
     echo "    -p <partition>       Mica partition id (Required)"
     echo "    -a <admin-cert-path> Path to the folder containing the admin rootca, crt and key files (Required)"
-    echo "    -k <cert-ref-id>     Unique identifier for this certificate in the Mica system (Required)"
+    echo "    -k <cert-ref>        Unique identifier for this certificate in the Mica system (Required)"
     echo "    -h this help menu"
     echo "Note that the file names for the admin certificate/key files should conform to the following:"
     echo "rootca: admin_\${partition}.members.mica.io_rootca.crt"
@@ -41,6 +41,12 @@ evansloc=$(which evans)
 
 if [[ -z ${partition} ]] ; then
     echo "ERROR: a partition name must be defined"
+    help
+    exit 1
+fi
+
+if [[ -z ${certrefkey} ]] ; then
+    echo "ERROR: a certificate ref must be defined"
     help
     exit 1
 fi
@@ -90,26 +96,26 @@ if [[ -z "$MICA_PORT" ]]; then
 #  echo "Waning: defaulting Mica port to 443"
   MICA_PORT=443
 fi
-service="mica.serviceprovider.service.v1.ServiceProviderToMicaService.PingExternalWithCertificate"
+service="mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.PingExternalWithCertificate"
 
 OUT=/tmp/$$.out
 
-jq --null-input  --arg certrefkey "$certrefkey"  '{
-  "certifcate_ref_key": $certrefkey
+jq --null-input  --arg certrefkey "${certrefkey}"  '{
+  "certificate_ref_key": $certrefkey
 }' | evans  cli call  ${service} \
     --host $MICA_HOST --port $MICA_PORT --reflection --tls \
-    --cacert $rootca_file \
-    --cert $cert_file \
-    --certkey $key_file > $OUT
+    --cacert $admin_rootca_file \
+    --cert $admin_cert_file \
+    --certkey $admin_key_file > $OUT
 
 RC=$?
 if [[ "$RC" -ne 0 ]]; then
   echo "Error: Evans call failed"
   exit 1
 fi
+cp $OUT "ping_external_response.json"
 
 mica_status=$(jq -r .status < $OUT)
-cp $OUT "ping_response.json"
 
 if [[ "${mica_status}" != "STATUS_SUCCESS" ]]; then
   echo "ERROR: the call from mica to test the certificates did not succeed. status was \"${mica_status}\" "

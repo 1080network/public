@@ -113,6 +113,8 @@ if [[ "$RC" -ne 0 ]]; then
   exit 1
 fi
 
+cp $OUT "gen_ext_client_mtls_cert_response.json"
+
 mica_status=$(jq -r .status < $OUT)
 
 if [[ "${mica_status}" != "STATUS_SUCCESS" ]]; then
@@ -122,7 +124,7 @@ fi
 
 output="callback_${name}_${partition}.members.mica.io"
 
-cat $OUT | jq -r .certificateToSign.base64CsrPem |  base64 decode -i - > "${output}.csr.pem"
+cat $OUT | jq -r .certificateToSign.base64CsrPem |  base64 -d -i > "${output}.csr.pem"
 RC=$?
 
 if [[ "$RC" -ne 0 ]]; then
@@ -130,6 +132,6 @@ if [[ "$RC" -ne 0 ]]; then
   exit 1
 fi
 
-cp $OUT "gen_ext_client_mtls_cert_response.json"
-
+certRef=$(cat $OUT | jq -r .certificateToSign.certificateRefKey)
+echo "certificateRef=${certref}
 echo "Call to Mica to generate a callback certificate succeeded!"

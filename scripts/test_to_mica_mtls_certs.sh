@@ -119,9 +119,9 @@ if [[ "$RC" -ne 0 ]]; then
   echo "Error: Evans call failed"
   exit 1
 fi
+cp $OUT "ping_response.json"
 
 mica_status=$(jq -r .status < $OUT)
-cp $OUT "ping_response.json"
 
 if [[ "${mica_status}" != "STATUS_SUCCESS" ]]; then
   echo "ERROR: the call to mica to test the certificates did not succeed. status was \"${mica_status}\" "
