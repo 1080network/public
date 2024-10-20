@@ -136,8 +136,10 @@ fi
 
 if [[ ${micarole} == "serviceprovider" ]]; then
   service="mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.GenerateMTLSCertificate"
+  role="RoleServiceProviderExternalServiceAccountFinancial"
 elif [[ ${micarole} == "partner" ]]; then
   service="mica.partner.administration.v1.PartnerAdministrationService.GenerateMTLSCertificate"
+  role="RolePartnerExternalServiceAccountFinancial"
 else
   echo "ERROR: the mica role \"${micarole}\" is invalid, must be either \"partner\" or \"serviceprovider\" "
   exit 1
@@ -145,9 +147,9 @@ fi
 
 OUT=/tmp/$$.out
 
-jq --null-input  --arg csr "$CSRB64"  --arg expiry "$duration" --arg name "$name" '{
+jq --null-input  --arg csr "$CSRB64"  --arg expiry "$duration" --arg name "$name" --arg role "${role}" ' {
   "csr": { "base64_pem_csr": $csr },
-  "roles": ["RolePartnerExternalServiceAccountFinancial"],
+  "roles": [$role],
   "expire_in_duration": $expiry,
   "display_name": $name
 }' | evans  \
