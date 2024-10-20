@@ -99,7 +99,7 @@ fi
 service=""
 if [[ "${micarole}" == "partner" ]]; then
   service="mica.partner.service.v1.PartnerToMicaService.Ping"
-elif [[ "${micarole}" == "partner" ]]; then
+elif [[ "${micarole}" == "serviceprovider" ]]; then
   service="mica.serviceprovider.service.v1.ServiceProviderToMicaService.Ping"
 else
   echo "ERROR: the mica role \"${micarole}\" is invalid, must be either \"partner\" or \"serviceprovider\" "

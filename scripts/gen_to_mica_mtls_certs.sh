@@ -134,10 +134,10 @@ if [[ -z "$MICA_PORT" ]]; then
   MICA_PORT=443
 fi
 
-if [[ ${micarole} == "serviceprovider" ]]; then
+if [[ "${micarole}" == "serviceprovider" ]]; then
   service="mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.GenerateMTLSCertificate"
   role="RoleServiceProviderExternalServiceAccountFinancial"
-elif [[ ${micarole} == "partner" ]]; then
+elif [[ "${micarole}" == "partner" ]]; then
   service="mica.partner.administration.v1.PartnerAdministrationService.GenerateMTLSCertificate"
   role="RolePartnerExternalServiceAccountFinancial"
 else
