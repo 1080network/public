@@ -133,5 +133,5 @@ if [[ "$RC" -ne 0 ]]; then
 fi
 
 certRef=$(cat $OUT | jq -r .certificateToSign.certificateRefKey)
-echo "certificateRef=${certref}
+echo "certificateRef=${certref}"
 echo "Call to Mica to generate a callback certificate succeeded!"
