@@ -3,3 +3,7 @@ build/
 *.iml
 .gradle/
 /out/
+*.pem
+*.crt
+*.key
+*.json

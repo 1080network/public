@@ -115,7 +115,7 @@ if [[ "$RC" -ne 0 ]]; then
 fi
 cp $OUT "ping_external_response.json"
 
-mica_status=$(jq -r .status < $OUT)
+mica_status=$(jq -r .response.status < $OUT)
 
 if [[ "${mica_status}" != "STATUS_SUCCESS" ]]; then
   echo "ERROR: the call from mica to test the certificates did not succeed. status was \"${mica_status}\" "
