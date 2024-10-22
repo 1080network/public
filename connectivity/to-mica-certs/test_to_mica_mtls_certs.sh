@@ -1,7 +1,7 @@
 #! /bin/bash
 
 help() {
-    echo "This script calls mica to generate a \"to mica\" certificate using a previously generated CSR file"
+    echo "This script calls mica to test a \"to mica\" certificates using previously generated certificate files"
     echo "Usage: $0 -p <partition> -n <name> -c <path to cert dir> -m <mica role> "
     echo "Options:"
     echo "    -p <partition>       Mica partition id (Required)"
@@ -99,7 +99,7 @@ fi
 service=""
 if [[ "${micarole}" == "partner" ]]; then
   service="mica.partner.service.v1.PartnerToMicaService.Ping"
-elif [[ "${micarole}" == "partner" ]]; then
+elif [[ "${micarole}" == "serviceprovider" ]]; then
   service="mica.serviceprovider.service.v1.ServiceProviderToMicaService.Ping"
 else
   echo "ERROR: the mica role \"${micarole}\" is invalid, must be either \"partner\" or \"serviceprovider\" "
@@ -119,9 +119,9 @@ if [[ "$RC" -ne 0 ]]; then
   echo "Error: Evans call failed"
   exit 1
 fi
+cp $OUT "ping_response.json"
 
 mica_status=$(jq -r .status < $OUT)
-cp $OUT "ping_response.json"
 
 if [[ "${mica_status}" != "STATUS_SUCCESS" ]]; then
   echo "ERROR: the call to mica to test the certificates did not succeed. status was \"${mica_status}\" "

@@ -40,17 +40,17 @@ if [[ -z ${partition} ]] ; then
 fi
 
 if [[ ${#certname} -gt 10 ]] ; then
-    echo "ERROR: the certificate name needs to be less than 10 characters"
+    echo "ERROR: the certificate name must be less than 10 characters in length"
     help
     exit 1
 fi
 
-echo Partition ${partition}
-echo Organization ${organization}
-echo Unit ${unit}
-echo State ${state}
-echo Locality ${locality}
-echo certname ${certname}
+echo "Partition:    \"${partition}\""
+echo "Organization: \"${organization}\""
+echo "Unit:         \"${unit}\""
+echo "State:        \"${state}\""
+echo "Locality:     \"${locality}\""
+echo "Cert Name:    \"${certname}\""
 
 output="externalclient_${certname}_${partition}.members.mica.io"
 outputcsr=${output}.csr

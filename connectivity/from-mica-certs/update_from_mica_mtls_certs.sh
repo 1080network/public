@@ -1,15 +1,16 @@
 #! /bin/bash
 
 help() {
-    echo "Usage: $0 -p <partition> -n <display_name> -c <path to csr> -a <path to admin certs dir> -d <cert duration> -m <mica-role>"
-    echo "This script calls mica to generate \"to mica\" certificates using a previously generated CSR file"
+    echo "Usage: $0 -p <partition> -n <display_name> -a <path to admin certs dir> -c <cert file> -r <rootca file> -k <cert ref> -e <enabled>"
+    echo "This script calls mica to update \"from mica\" external client certificates. Typically you return a signed certificate."
     echo "Options:"
-    echo "    -p <partition>       Mica partition id (Required)"
-    echo "    -n <display-name>    Certificate display name (Required, can be up to 10 characters in length)"
-    echo "    -c <csr-path>        Path to the PEM format CSR file used to sign the cert (Required)"
-    echo "    -a <admin-cert-path> path to the folder containing the admin rootca, crt and key files (Required)"
-    echo "    -d <duration>        the length of time the cert is to be valid (e.g., 24h, 720h) default is 24h"
-    echo "    -m <mica-role>       this should be one of partner|serviceprovider (Required)"
+    echo "    -p <partition>         Mica partition id (Required)"
+    echo "    -n <display-name>      Certificate display name (Required, can be up to 10 characters in length)"
+    echo "    -a <admin-cert-path>   path to the folder containing the admin rootca, crt and key files (Required)"
+    echo "    -c <cert-file-path>    Full or relative path to the certificate PEM file (Required)"
+    echo "    -r <rootca-file-path>  Full or relative path to the rootca PEM file (Required)"
+    echo "    -k <cert-ref-id>       Unique identifier for this certificate in the Mica system (Required)"
+    echo "    -e <enabled>           Boolean flag indicating whether this certificate is to be enabled or not (default: false)"
     echo "    -h this help menu"
     echo "Note that the file names for the admin certificate/key files should conform to the following:"
     echo "rootca: admin_\${partition}.members.mica.io_rootca.crt"
@@ -27,22 +28,23 @@ help() {
 ############################################################################################
 
 partition=""
-
-duration="24h"
-csrfile=""
 name=""
-micarole=""
 adminpath=""
+rootcapemfile=""
+certpemfile=""
+enabled=false
+certref=""
 
-while getopts p:n:d:c:a:m:h flag
+while getopts p:n:a:c:r:k:e:h flag
 do
     case "${flag}" in
         p) partition=${OPTARG};;
         n) name=${OPTARG};;
-        d) duration=${OPTARG};;
-        c) csrfile=${OPTARG};;
         a) adminpath=${OPTARG};;
-        m) micarole=${OPTARG};;
+        c) certpemfile=${OPTARG};;
+        r) rootcapemfile=${OPTARG};;
+        k) certref=${OPTARG};;
+        e) enabled=${OPTARG};;
         h) help && exit 0;;
        \?) # Invalid option
           echo "Error: Invalid option"
@@ -62,33 +64,23 @@ if [[ -z ${partition} ]] ; then
     help
     exit 1
 fi
+
+if [[ -z ${certref} ]] ; then
+    echo "ERROR: a certificate ref must be defined"
+    help
+    exit 1
+fi
+
+if [[ -z ${name} ]] ; then
+    echo "ERROR: a certificate name must be defined"
+    help
+    exit 1
+fi
+
 if [[ -z ${adminpath} ]] ; then
     echo "ERROR: the path to the admin certs must be defined"
     help
     exit 1
-fi
-
-if [[ -z ${csrfile} ]] ; then
-    echo "ERROR: the path to the CSR file must be defined"
-    help
-    exit 1
-fi
-
-if [[ -z ${micarole} ]] ; then
-    echo "ERROR: the mica role must be defined"
-    help
-    exit 1
-fi
-
-if [[ ${#name} -gt 10 ]] ; then
-    echo "ERROR: the certificate name must 10 characters or less"
-    help
-    exit 1
-fi
-
-if [[ ! -f "$csrfile" ]]; then
-  echo "ERROR: CSR file \"${csrfile}\" does not exist"
-  exit 1
 fi
 
 if [[ ! -d "${adminpath}" ]]; then
@@ -115,13 +107,32 @@ if [[ ! -f "$admin_key_file" ]]; then
   exit 1
 fi
 
-CSRB64=$(base64 -i $csrfile)
+if [[ ! -f "${certpemfile}" ]]; then
+  echo "Certificate PEM file ${certpemfile} does not exist"
+  exit 1
+fi
+
+if [[ ! -f "${rootcapemfile}" ]]; then
+  echo "Root CA PEM file ${rootcapemfile} does not exist"
+  exit 1
+fi
+
+cert_pem_base64=$(base64 -i ${certpemfile})
 RC=$?
 
 if [[ "$RC" -ne 0 ]]; then
-  echo "Base64 conversion failed"
+  echo "Base64 conversion of certificate PEM file failed"
   exit 1
 fi
+
+rootca_pem_base64=$(base64 -i ${rootcapemfile})
+RC=$?
+
+if [[ "$RC" -ne 0 ]]; then
+  echo "Base64 conversion of rootca PEM file failed"
+  exit 1
+fi
+
 
 default_host="api.${partition}.members.mica.io"
 if [[ -z "$MICA_HOST" ]]; then
@@ -134,24 +145,18 @@ if [[ -z "$MICA_PORT" ]]; then
   MICA_PORT=443
 fi
 
-if [[ ${micarole} == "serviceprovider" ]]; then
-  service="mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.GenerateMTLSCertificate"
-elif [[ ${micarole} == "partner" ]]; then
-  service="mica.partner.administration.v1.PartnerAdministrationService.GenerateMTLSCertificate"
-else
-  echo "ERROR: the mica role \"${micarole}\" is invalid, must be either \"partner\" or \"serviceprovider\" "
-  exit 1
-fi
-
 OUT=/tmp/$$.out
 
-jq --null-input  --arg csr "$CSRB64"  --arg expiry "$duration" --arg name "$name" '{
-  "csr": { "base64_pem_csr": $csr },
-  "roles": ["RolePartnerExternalServiceAccountFinancial"],
-  "expire_in_duration": $expiry,
-  "display_name": $name
+#echo "calling $service"
+jq --null-input  --arg name "${name}" --arg certrefkey "${certref}" --arg certificate "${cert_pem_base64}" \
+   --arg rootca "${rootca_pem_base64}" --arg enabled ${enabled} '{
+  "certificate_ref_key": $certrefkey,
+  "base64_signed_cert_pem_from_csr": $certificate,
+  "base64_rootca_bundle_pem": $rootca,
+  "display_name": $name,
+  "enabled":  $enabled
 }' | evans  \
-    cli call ${service} \
+    cli call mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.UpdateExternalClientMTLSCertificate \
     --host $MICA_HOST --port $MICA_PORT --reflection --tls \
     --cacert $admin_rootca_file \
     --cert $admin_cert_file \
@@ -162,20 +167,15 @@ if [[ "$RC" -ne 0 ]]; then
   echo "Evans call failed"
   exit 1
 fi
+cp $OUT "update_callback_cert_response.json"
 
 mica_status=$(jq -r .status < $OUT)
 
 if [[ "${mica_status}" != "STATUS_SUCCESS" ]]; then
-  echo "the call to mica to generate the certificate did not succeed. status was ${status}"
+  echo "the call to mica to update the certificate did not succeed. status was ${status}"
   exit 1
 fi
 
-output="externalclient_${name}_${partition}.members.mica.io"
+cp $OUT "update_callback_cert_response.json"
 
-cat $OUT | jq -r .certificate.pemCertificate > "${output}.crt"
-
-cat $OUT | jq -r .certificate.pemIssuingCa  > "${output}_rootca.crt"
-
-cp $OUT "generate_mtls_certificate_response.json"
-
-echo "Call to Mica generate to client certificate succeeded!"
+echo "Call to Mica to update the callback certificate succeeded!"
