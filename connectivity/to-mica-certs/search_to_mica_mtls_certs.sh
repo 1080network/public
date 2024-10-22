@@ -1,10 +1,12 @@
 #! /bin/bash
 
 help() {
-    echo "Usage: $0 -p <partition> -a <path to admin certs dir> "
-    echo "This script calls mica to search for \"from mica\" client certificates for your Mica partition."
+    echo "Usage: $0 -p <partition> -a <path to admin certs dir> -m <mica-role>"
+    echo "This script calls mica to search \"to mica\" certificates"
     echo "Options:"
-    echo "    -p <partition>         Mica partition id (Required)"
+    echo "    -p <partition>       Mica partition id (Required)"
+    echo "    -a <admin-cert-path> path to the folder containing the admin rootca, crt and key files (Required)"
+    echo "    -m <mica-role>       this should be one of partner|serviceprovider (Required)"
     echo "    -h this help menu"
     echo "Note that the file names for the admin certificate/key files should conform to the following:"
     echo "rootca: admin_\${partition}.members.mica.io_rootca.crt"
@@ -22,13 +24,15 @@ help() {
 ############################################################################################
 
 partition=""
+micarole=""
 adminpath=""
 
-while getopts p:n:a:c:r:k:e:h flag
+while getopts p:a:m:h flag
 do
     case "${flag}" in
         p) partition=${OPTARG};;
         a) adminpath=${OPTARG};;
+        m) micarole=${OPTARG};;
         h) help && exit 0;;
        \?) # Invalid option
           echo "Error: Invalid option"
@@ -48,9 +52,14 @@ if [[ -z ${partition} ]] ; then
     help
     exit 1
 fi
-
 if [[ -z ${adminpath} ]] ; then
     echo "ERROR: the path to the admin certs must be defined"
+    help
+    exit 1
+fi
+
+if [[ -z ${micarole} ]] ; then
+    echo "ERROR: the mica role must be defined"
     help
     exit 1
 fi
@@ -79,7 +88,6 @@ if [[ ! -f "$admin_key_file" ]]; then
   exit 1
 fi
 
-
 default_host="api.${partition}.members.mica.io"
 if [[ -z "$MICA_HOST" ]]; then
 #  echo "defaulting to $default_host"
@@ -91,12 +99,21 @@ if [[ -z "$MICA_PORT" ]]; then
   MICA_PORT=443
 fi
 
+if [[ "${micarole}" == "serviceprovider" ]]; then
+  service="mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.SearchMTLSCertificate"
+  role="RoleServiceProviderExternalServiceAccountFinancial"
+elif [[ "${micarole}" == "partner" ]]; then
+  service="mica.partner.administration.v1.PartnerAdministrationService.SearchMTLSCertificate"
+  role="RolePartnerExternalServiceAccountFinancial"
+else
+  echo "ERROR: the mica role \"${micarole}\" is invalid, must be either \"partner\" or \"serviceprovider\" "
+  exit 1
+fi
+
 OUT=/tmp/$$.out
 
-#echo "calling $service"
-jq --null-input    \
-    '{}' | evans  \
-    cli call mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.SearchExternalClientMTLSCertificate \
+jq --null-input  ' {}' | evans  \
+    cli call ${service} \
     --host $MICA_HOST --port $MICA_PORT --reflection --tls \
     --cacert $admin_rootca_file \
     --cert $admin_cert_file \
@@ -107,15 +124,15 @@ if [[ "$RC" -ne 0 ]]; then
   echo "Evans call failed"
   exit 1
 fi
-cp $OUT "search_from_mica_cert_response.json"
+
+cp $OUT "search_to_mica_certificates.json"
 
 mica_status=$(jq -r .status < $OUT)
 
 if [[ "${mica_status}" != "STATUS_SUCCESS" ]]; then
-  echo "the call to mica to search for certificates did not succeed. status was ${status}"
+  echo "the call to mica to search certificates did not succeed. status was ${status}"
   exit 1
 fi
 
-
-echo "Call to Mica to search external client certificates succeeded!"
-echo "Search results saved in \"search_from_mica_cert_response.json\" "
+echo "Call to Mica to search to-mica certificates succeeded!"
+echo "Search results in \"search_to_mica_certificates.json\" "

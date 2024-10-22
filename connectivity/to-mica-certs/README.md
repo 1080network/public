@@ -120,3 +120,23 @@ using an additional `-c` command line parameter:
 ```
 
 At this point your newly created certificates can be used from your member callback application.
+
+### 4. Search Certificates Loaded into the Mica Partner or Service Provider
+At any time in your development you may call Mica to list the existing certificates.
+
+Script: `search_to_mica_mtls_certs.sh`
+
+Inputs:
+1. Mica Partition ID
+2. Mica Role for your Application
+
+Outputs:
+JSON file containing the certificates.
+
+Sample Invocation:
+```text
+> ./search_to_mica_mtls_certs.sh -p hron3n -a /certs/mica-admin -m partner
+    
+Call to Mica to search external client certificates succeeded!
+echo "Search results saved in "search_to_mica_cert_response.json"
+```

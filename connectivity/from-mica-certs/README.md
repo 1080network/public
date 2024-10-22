@@ -101,8 +101,7 @@ documented [here](https://developer.mica.io/issuer/tl-dr/#implementing-a-service
 
 Sample Invocation:
 ```text
-> ./test_from_mica_mtls_certs.sh -p ril69i -a /certs/mica/admin -k 82fdb917-eaa9-46f7-87c4-35133a165828 \
-    -c ./callback_test_ril69i.members.mica.io.crt -r ./callback_test_ril69i.members.io_rootca.crt 
+> ./test_from_mica_mtls_certs.sh -p ril69i -a /certs/mica/admin -k 82fdb917-eaa9-46f7-87c4-35133a165828 
 
 Connection from Mica service was successful!
 ```
@@ -111,24 +110,39 @@ When you are ready to stop using the existing certificate and begin using your n
 Mica again to Enable the certificate you have uploaded, making it the default client certificate used for calls
 from Mica to your Callback Service.
 
-Script: `update_from_mica_mtls_certs.sh`
+Script: `enable_from_mica_mtls_certs.sh`
 
 Inputs:
-1. Mica Client certificate PEM file (`callback_<name>_<partition>.members.mica.io.crt`)
-2. Root CA PEM file (`callback_<name>_<partition>.members.mica.io_rootca.crt`)
-3. Mica Partition ID
-4. Certificate name
-5. Mica Unique Certificate Identifier
-6. Enable flag set to true
+1. Mica Partition ID
+2. Mica Unique Certificate Identifier
 
 Outputs:
 None
 
 Sample Invocation:
 ```text
-> ./update_from_mica_mtls_certs.sh -p ril69i -n test -a /certs/mica-admin -k 82fdb917-eaa9-46f7-87c4-35133a165828 \
-    -c ./callback_test_ril69i.members.mica.io.crt -r callback_test_ril69i.members.mica.io_rootca.crt -e true
+> ./enable_from_mica_mtls_certs.sh -p ril69i -a /certs/mica-admin -k 82fdb917-eaa9-46f7-87c4-35133a165828 
     
 Call to Mica to update the callback certificate succeeded!
 ```
+### 5. Search Certificates Loaded into the Mica Service Provider
+At any time in your development you may call Mica to list the existing certificates.
+
+Script: `search_from_mica_mtls_certs.sh`
+
+Inputs:
+1. Mica Partition ID
+
+Outputs:
+JSON file containing the certificates.
+
+Sample Invocation:
+```text
+> ./search_from_mica_mtls_certs.sh -p ril69i -a /certs/mica-admin 
+    
+Call to Mica to search external client certificates succeeded!
+echo "Search results saved in "search_from_mica_cert_response.json"
+```
+
+
 
