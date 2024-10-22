@@ -107,8 +107,7 @@ service="mica.serviceprovider.administration.v1.ServiceProviderAdministrationSer
 OUT=/tmp/$$.out
 
 #echo "calling $service"
-jq --null-input  --arg certrefkey "${certref}"  \
-    --arg enabled ${enabled} '{
+jq --null-input  --arg certrefkey "${certref}"  '{
   "certificate_ref_key": $certrefkey,
   "enabled":  true
 }' | evans  \
