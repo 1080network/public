@@ -2,15 +2,9 @@
 
 help() {
     echo "Usage: $0 -p <partition> -n <display_name> -a <path to admin certs dir> -c <cert file> -r <rootca file> -k <cert ref> -e <enabled>"
-    echo "This script calls mica to update \"from mica\" external client certificates. Typically you return a signed certificate."
+    echo "This script calls mica to search for \"from mica\" client certificates."
     echo "Options:"
     echo "    -p <partition>         Mica partition id (Required)"
-    echo "    -n <display-name>      Certificate display name (Required, can be up to 10 characters in length)"
-    echo "    -a <admin-cert-path>   path to the folder containing the admin rootca, crt and key files (Required)"
-    echo "    -c <cert-file-path>    Full or relative path to the certificate PEM file (Required)"
-    echo "    -r <rootca-file-path>  Full or relative path to the rootca PEM file (Required)"
-    echo "    -k <cert-ref-id>       Unique identifier for this certificate in the Mica system (Required)"
-    echo "    -e <enabled>           Boolean flag indicating whether this certificate is to be enabled or not (default: false)"
     echo "    -h this help menu"
     echo "Note that the file names for the admin certificate/key files should conform to the following:"
     echo "rootca: admin_\${partition}.members.mica.io_rootca.crt"
@@ -28,23 +22,13 @@ help() {
 ############################################################################################
 
 partition=""
-name=""
 adminpath=""
-rootcapemfile=""
-certpemfile=""
-enabled=false
-certref=""
 
 while getopts p:n:a:c:r:k:e:h flag
 do
     case "${flag}" in
         p) partition=${OPTARG};;
-        n) name=${OPTARG};;
         a) adminpath=${OPTARG};;
-        c) certpemfile=${OPTARG};;
-        r) rootcapemfile=${OPTARG};;
-        k) certref=${OPTARG};;
-        e) enabled=${OPTARG};;
         h) help && exit 0;;
        \?) # Invalid option
           echo "Error: Invalid option"
@@ -61,18 +45,6 @@ fi
 
 if [[ -z ${partition} ]] ; then
     echo "ERROR: a partition name must be defined"
-    help
-    exit 1
-fi
-
-if [[ -z ${certref} ]] ; then
-    echo "ERROR: a certificate ref must be defined"
-    help
-    exit 1
-fi
-
-if [[ -z ${name} ]] ; then
-    echo "ERROR: a certificate name must be defined"
     help
     exit 1
 fi
@@ -107,32 +79,6 @@ if [[ ! -f "$admin_key_file" ]]; then
   exit 1
 fi
 
-if [[ ! -f "${certpemfile}" ]]; then
-  echo "Certificate PEM file ${certpemfile} does not exist"
-  exit 1
-fi
-
-if [[ ! -f "${rootcapemfile}" ]]; then
-  echo "Root CA PEM file ${rootcapemfile} does not exist"
-  exit 1
-fi
-
-cert_pem_base64=$(base64 -i ${certpemfile})
-RC=$?
-
-if [[ "$RC" -ne 0 ]]; then
-  echo "Base64 conversion of certificate PEM file failed"
-  exit 1
-fi
-
-rootca_pem_base64=$(base64 -i ${rootcapemfile})
-RC=$?
-
-if [[ "$RC" -ne 0 ]]; then
-  echo "Base64 conversion of rootca PEM file failed"
-  exit 1
-fi
-
 
 default_host="api.${partition}.members.mica.io"
 if [[ -z "$MICA_HOST" ]]; then
@@ -145,19 +91,13 @@ if [[ -z "$MICA_PORT" ]]; then
   MICA_PORT=443
 fi
 
-service="mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.UpdateExternalClientMTLSCertificate"
+service="mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.SearchExternalClientMTLSCertificate"
 
 OUT=/tmp/$$.out
 
 #echo "calling $service"
-jq --null-input  --arg name "${name}" --arg certrefkey "${certref}" --arg certificate "${cert_pem_base64}" \
-   --arg rootca "${rootca_pem_base64}" --arg enabled ${enabled} '{
-  "certificate_ref_key": $certrefkey,
-  "base64_signed_cert_pem_from_csr": $certificate,
-  "base64_rootca_bundle_pem": $rootca,
-  "display_name": $name,
-  "enabled":  $enabled
-}' | evans  \
+jq --null-input    \
+    '{}' | evans  \
     cli call ${service} \
     --host $MICA_HOST --port $MICA_PORT --reflection --tls \
     --cacert $admin_rootca_file \
@@ -169,15 +109,15 @@ if [[ "$RC" -ne 0 ]]; then
   echo "Evans call failed"
   exit 1
 fi
-cp $OUT "update_callback_cert_response.json"
+cp $OUT "search_from_mica_cert_response.json"
 
 mica_status=$(jq -r .status < $OUT)
 
 if [[ "${mica_status}" != "STATUS_SUCCESS" ]]; then
-  echo "the call to mica to update the certificate did not succeed. status was ${status}"
+  echo "the call to mica to search for certificates did not succeed. status was ${status}"
   exit 1
 fi
 
-cp $OUT "update_callback_cert_response.json"
 
-echo "Call to Mica to update the callback certificate succeeded!"
+echo "Call to Mica to search external client certificates succeeded!"
+echo "Search results saved in \"search_from_mica_cert_response.json\" "

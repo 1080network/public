@@ -1,8 +1,8 @@
 #! /bin/bash
 
 help() {
-    echo "This script calls mica to test \"from mica\" certificates using previously generated certificate files"
     echo "Usage: $0 -p <partition> -a <path to admin cert dir> -m <mica role> "
+    echo "This script calls mica to test \"from mica\" certificates using previously generated certificate files"
     echo "Options:"
     echo "    -p <partition>       Mica partition id (Required)"
     echo "    -a <admin-cert-path> Path to the folder containing the admin rootca, crt and key files (Required)"
