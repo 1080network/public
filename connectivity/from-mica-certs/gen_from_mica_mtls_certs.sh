@@ -93,15 +93,13 @@ if [[ -z "$MICA_PORT" ]]; then
   MICA_PORT=443
 fi
 
-service="mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.GenerateExternalClientMTLSCertificate"
-
 OUT=/tmp/$$.out
 
 #echo "calling $service"
 jq --null-input  --arg name "$name" '{
   "display_name": $name
 }' | evans  \
-    cli call ${service} \
+    cli call mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.GenerateExternalClientMTLSCertificate \
     --host $MICA_HOST --port $MICA_PORT --reflection --tls \
     --cacert $admin_rootca_file \
     --cert $admin_cert_file \

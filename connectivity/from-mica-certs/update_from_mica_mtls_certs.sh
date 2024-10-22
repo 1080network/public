@@ -145,8 +145,6 @@ if [[ -z "$MICA_PORT" ]]; then
   MICA_PORT=443
 fi
 
-service="mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.UpdateExternalClientMTLSCertificate"
-
 OUT=/tmp/$$.out
 
 #echo "calling $service"
@@ -158,7 +156,7 @@ jq --null-input  --arg name "${name}" --arg certrefkey "${certref}" --arg certif
   "display_name": $name,
   "enabled":  $enabled
 }' | evans  \
-    cli call ${service} \
+    cli call mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.UpdateExternalClientMTLSCertificate \
     --host $MICA_HOST --port $MICA_PORT --reflection --tls \
     --cacert $admin_rootca_file \
     --cert $admin_cert_file \

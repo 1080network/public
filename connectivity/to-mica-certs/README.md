@@ -6,9 +6,9 @@ is authenticated by the server in addition to the client authenticating the serv
 to validate the certificates presented by Mica clients. This provides an extra level of security that helps ensure only 
 validate Mica members can connect to the network.
 
-This directory contains scripts that will Mica members may use to create keys, CSRs and certificates. Most of the 
-scripts call a Mica admin API and require admin certificates provided by Mica. Also, every script that calls a Mica 
-service will copy the response payload in JSON format to a file.
+This directory contains scripts that Mica members can use to create keys, CSRs and certificates for connections made
+from your services to Mica. Most of the scripts call a Mica admin API and require admin certificates provided by Mica. 
+Also, every script that calls a Mica service will copy the response payload in JSON format to a file.
 
 **Prerequisites**
 

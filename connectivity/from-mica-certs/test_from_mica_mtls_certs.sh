@@ -96,13 +96,12 @@ if [[ -z "$MICA_PORT" ]]; then
 #  echo "Waning: defaulting Mica port to 443"
   MICA_PORT=443
 fi
-service="mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.PingExternalWithCertificate"
 
 OUT=/tmp/$$.out
 
 jq --null-input  --arg certrefkey "${certrefkey}"  '{
   "certificate_ref_key": $certrefkey
-}' | evans  cli call  ${service} \
+}' | evans  cli call  mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.PingExternalWithCertificate \
     --host $MICA_HOST --port $MICA_PORT --reflection --tls \
     --cacert $admin_rootca_file \
     --cert $admin_cert_file \
