@@ -135,10 +135,10 @@ if [[ -z "$MICA_PORT" ]]; then
 fi
 
 if [[ "${micarole}" == "serviceprovider" ]]; then
-  service="mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.GenerateMTLSCertificate"
+  service="mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.GenerateToMicaCertificate"
   role="RoleServiceProviderExternalServiceAccountFinancial"
 elif [[ "${micarole}" == "partner" ]]; then
-  service="mica.partner.administration.v1.PartnerAdministrationService.GenerateMTLSCertificate"
+  service="mica.partner.administration.v1.PartnerAdministrationService.GenerateToMicaCertificate"
   role="RolePartnerExternalServiceAccountFinancial"
 else
   echo "ERROR: the mica role \"${micarole}\" is invalid, must be either \"partner\" or \"serviceprovider\" "
@@ -176,7 +176,7 @@ fi
 
 output="externalclient_${name}_${partition}.members.mica.io"
 
-cat $OUT | jq -r .certificate.pemCertificate > "${output}.crt"
+cat $OUT | jq -r .certificate.base64CertificatePem | base64 -d > "${output}.crt"
 
 cat $OUT | jq -r .certificate.pemIssuingCa  > "${output}_rootca.crt"
 

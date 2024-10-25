@@ -10,7 +10,6 @@ help() {
     echo "    -c <cert-file-path>    Full or relative path to the certificate PEM file (Required)"
     echo "    -r <rootca-file-path>  Full or relative path to the rootca PEM file (Required)"
     echo "    -k <cert-ref-id>       Unique identifier for this certificate in the Mica system (Required)"
-    echo "    -e <enabled>           Boolean flag indicating whether this certificate is to be enabled or not (default: false)"
     echo "    -h this help menu"
     echo "Note that the file names for the admin certificate/key files should conform to the following:"
     echo "rootca: admin_\${partition}.members.mica.io_rootca.crt"
@@ -32,10 +31,9 @@ name=""
 adminpath=""
 rootcapemfile=""
 certpemfile=""
-enabled=false
 certref=""
 
-while getopts p:n:a:c:r:k:e:h flag
+while getopts p:n:a:c:r:k:h flag
 do
     case "${flag}" in
         p) partition=${OPTARG};;
@@ -44,7 +42,6 @@ do
         c) certpemfile=${OPTARG};;
         r) rootcapemfile=${OPTARG};;
         k) certref=${OPTARG};;
-        e) enabled=${OPTARG};;
         h) help && exit 0;;
        \?) # Invalid option
           echo "Error: Invalid option"
@@ -146,17 +143,16 @@ if [[ -z "$MICA_PORT" ]]; then
 fi
 
 OUT=/tmp/$$.out
-
+echo $cert_pem_base64
 #echo "calling $service"
 jq --null-input  --arg name "${name}" --arg certrefkey "${certref}" --arg certificate "${cert_pem_base64}" \
-   --arg rootca "${rootca_pem_base64}" --arg enabled ${enabled} '{
-  "certificate_ref_key": $certrefkey,
+   --arg rootca "${rootca_pem_base64}" '{
+  "certificate_id": $certrefkey,
   "base64_signed_cert_pem_from_csr": $certificate,
-  "base64_rootca_bundle_pem": $rootca,
-  "display_name": $name,
-  "enabled":  $enabled
+  "base64_rootca_pem": $rootca,
+  "display_name": $name
 }' | evans  \
-    cli call mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.UpdateExternalClientMTLSCertificate \
+    cli call mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.UpdateFromMicaClientCertificate \
     --host $MICA_HOST --port $MICA_PORT --reflection --tls \
     --cacert $admin_rootca_file \
     --cert $admin_cert_file \

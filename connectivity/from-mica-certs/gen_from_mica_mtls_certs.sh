@@ -99,7 +99,7 @@ OUT=/tmp/$$.out
 jq --null-input  --arg name "$name" '{
   "display_name": $name
 }' | evans  \
-    cli call mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.GenerateExternalClientMTLSCertificate \
+    cli call mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.GenerateFromMicaClientCertificate \
     --host $MICA_HOST --port $MICA_PORT --reflection --tls \
     --cacert $admin_rootca_file \
     --cert $admin_cert_file \
@@ -130,6 +130,6 @@ if [[ "$RC" -ne 0 ]]; then
   exit 1
 fi
 
-certRef=$(cat $OUT | jq -r .certificateToSign.certificateRefKey)
+certRef=$(cat $OUT | jq -r .certificateToSign.certificateId)
 echo "certificateRef=${certRef}"
 echo "Call to Mica to generate a callback certificate succeeded!"

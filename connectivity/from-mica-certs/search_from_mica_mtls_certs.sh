@@ -96,7 +96,7 @@ OUT=/tmp/$$.out
 #echo "calling $service"
 jq --null-input    \
     '{}' | evans  \
-    cli call mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.SearchExternalClientMTLSCertificate \
+    cli call mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.SearchFromMicaClientCertificate \
     --host $MICA_HOST --port $MICA_PORT --reflection --tls \
     --cacert $admin_rootca_file \
     --cert $admin_cert_file \
