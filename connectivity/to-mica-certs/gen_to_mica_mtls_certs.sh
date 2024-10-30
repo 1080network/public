@@ -178,6 +178,6 @@ output="externalclient_${name}_${partition}.members.mica.io"
 
 cat $OUT | jq -r .certificate.base64CertificatePem | base64 -d > "${output}.crt"
 
-cat $OUT | jq -r .certificate.pemIssuingCa  > "${output}_rootca.crt"
+cat $OUT | jq -r .certificate.base64RootcaPem | base64 -d > "${output}_rootca.crt"
 
 echo "Call to Mica generate to client certificate succeeded!"
