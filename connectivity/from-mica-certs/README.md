@@ -36,6 +36,7 @@ Script: `gen_from_mica_mtls_certs.sh`
 
 Inputs:
 1. Certificate display name
+2. Mica partition ID
 
 Outputs:
 1. Mica Certificate Signing Request PEM file (`callback_<name>_<partition>.members.mica.io.csr`)
@@ -91,6 +92,7 @@ Script: `test_from_mica_mtls_certs.sh`
 
 Inputs:
 1. Mica Certificate Identifier 
+2. Mica Partition ID
 
 Outputs:
 None
