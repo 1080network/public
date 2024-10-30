@@ -106,9 +106,9 @@ OUT=/tmp/$$.out
 
 #echo "calling $service"
 jq --null-input  --arg certrefkey "${certref}"  '{
-  "certificate_ref_key": $certrefkey
+  "certificate_id": $certrefkey
 }' | evans  \
-    cli call mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.EnableFromMicaCertificate \
+    cli call mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.EnableFromMicaClientCertificate \
     --host $MICA_HOST --port $MICA_PORT --reflection --tls \
     --cacert $admin_rootca_file \
     --cert $admin_cert_file \

@@ -143,7 +143,7 @@ if [[ -z "$MICA_PORT" ]]; then
 fi
 
 OUT=/tmp/$$.out
-echo $cert_pem_base64
+#echo $cert_pem_base64
 #echo "calling $service"
 jq --null-input  --arg name "${name}" --arg certrefkey "${certref}" --arg certificate "${cert_pem_base64}" \
    --arg rootca "${rootca_pem_base64}" '{
