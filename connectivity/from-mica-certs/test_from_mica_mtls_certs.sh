@@ -100,7 +100,7 @@ fi
 OUT=/tmp/$$.out
 
 jq --null-input  --arg certrefkey "${certrefkey}"  '{
-  "certificate_ref_key": $certrefkey
+  "certificate_id": $certrefkey
 }' | evans  cli call  mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.PingExternalWithCertificate \
     --host $MICA_HOST --port $MICA_PORT --reflection --tls \
     --cacert $admin_rootca_file \

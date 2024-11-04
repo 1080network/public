@@ -100,10 +100,10 @@ if [[ -z "$MICA_PORT" ]]; then
 fi
 
 if [[ "${micarole}" == "serviceprovider" ]]; then
-  service="mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.SearchMTLSCertificate"
+  service="mica.serviceprovider.administration.v1.ServiceProviderAdministrationService.SearchToMicaCertificate"
   role="RoleServiceProviderExternalServiceAccountFinancial"
 elif [[ "${micarole}" == "partner" ]]; then
-  service="mica.partner.administration.v1.PartnerAdministrationService.SearchMTLSCertificate"
+  service="mica.partner.administration.v1.PartnerAdministrationService.SearchToMicaCertificate"
   role="RolePartnerExternalServiceAccountFinancial"
 else
   echo "ERROR: the mica role \"${micarole}\" is invalid, must be either \"partner\" or \"serviceprovider\" "
